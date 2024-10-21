@@ -5,6 +5,7 @@ import { baseURL } from '../../environments/environment';
 import axios from 'axios';
 import { jwtDecode } from "jwt-decode";
 import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 interface JobSeeker {
   id: number;
@@ -40,6 +41,7 @@ const Profile = () => {
   const [userData, setUserData] = useState<JobSeeker | Agency | null>(null);
   const [status, setStatus] = useState<string>('');
   const navigate = useNavigate();
+  console.log(status)
 
   const updateStatus = async (agencyId: number, jobSeekerId: number, status: string) => {
     const token: any = localStorage.getItem('token');
@@ -95,7 +97,8 @@ const Profile = () => {
   }, [navigate]);
 
   if (!userData) {
-    return <div className="text-center">User not found.</div>;
+    return navigate('/login');
+    // return <div className="text-center">User not found.</div>;
   }
   const handleChat = () => {
     if (isJobSeeker(userData)) {
@@ -107,7 +110,7 @@ const Profile = () => {
       } else {
         toast.error('No job seekers available for chat');
       }
-    }
+    } 
   };
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -166,30 +169,59 @@ const Profile = () => {
                     <span>Contact: {jobSeeker.contact}</span><br />
                     <span>Gender: {jobSeeker.gender}</span><br />
                     <span>Status: {jobSeeker.status}</span><br />
-                    <button
-                      onClick={() => updateStatus(userData.id, jobSeeker.id, 'accepted')}
-                      className='btn btn-success btn-sm'
-                    >
-                      Accept
-                    </button>
-                    <button
-                      onClick={() => updateStatus(userData.id, jobSeeker.id, 'rejected')}
-                      className='btn btn-danger btn-sm'
-                    >
-                      Decline
-                    </button>
+                    {jobSeeker.status === 'pending' ? (
+                      <>
+                        <button
+                          onClick={() => updateStatus(userData.id, jobSeeker.id, 'accepted')}
+                          className='btn btn-success btn-sm'
+                        >
+                          Accept
+                        </button>
+                        <button
+                          onClick={() => updateStatus(userData.id, jobSeeker.id, 'rejected')}
+                          className='btn btn-danger btn-sm'
+                        >
+                          Reject
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {jobSeeker.status === 'accepted' ? (
+                          
+                          <button
+                            onClick={() => updateStatus(userData.id, jobSeeker.id, 'rejected')}
+                            className='btn btn-danger btn-sm'
+                          >
+                            Reject
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => updateStatus(userData.id, jobSeeker.id, 'accepted')}
+                            className='btn btn-success btn-sm'
+                          >
+                            Accept
+                          </button>
+                        )}
+                      </>
+                    )}
+                    {userData.JobSeekers.length > 0 && jobSeeker.status === 'accepted' && (
+                <button onClick={handleChat} className="btn btn-primary btn-sm ">
+                  Chat
+                </button>
+                )}
                     {jobSeeker.resume && <a href={`${baseURL}${jobSeeker.resume}`} target="_blank" className="btn btn-link">Download Resume</a>}
+                    
                   </li>
                 ))}
               </ul>
+                
             </div>
+
           )}
         </div>
       </div>
 
-      <button onClick={handleChat} className="btn mb-5 btn-primary ">
-        Chat
-      </button>
+
       <button onClick={handleLogout} className="btn mb-5 btn-danger ">
         Logout
       </button>
